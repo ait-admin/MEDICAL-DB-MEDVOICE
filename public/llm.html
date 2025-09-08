@@ -1,0 +1,712 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MedVoice LLM Interface</title>
+    <style>
+        :root {
+            --primary-color: #4a6fa5;
+            --secondary-color: #6c757d;
+            --success-color: #28a745;
+            --danger-color: #dc3545;
+            --warning-color: #ffc107;
+            --light-color: #f8f9fa;
+            --dark-color: #343a40;
+            --border-radius: 8px;
+            --box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(120deg, #e0eafc 0%, #cfdef3 100%);
+            color: #333;
+            line-height: 1.6;
+            padding: 0;
+        }
+        
+        .container {
+            max-width: 900px;
+            margin-top: 2rem;
+            margin-bottom: 2rem;
+            margin-left: 250px;
+            margin-right: 0;
+            width: 100%;
+            background: none;
+            padding: 0;
+        }
+        
+        @media (max-width: 1200px) {
+            .container, .main-content {
+                max-width: 100%;
+                margin-left: 0;
+                padding: 0 0.5rem;
+            }
+        }
+        
+        .main-content {
+            margin-top: 0;
+            margin-bottom: 0;
+            max-width: 900px;
+            width: 100%;
+            border-radius: 18px;
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.18), 0 2px 24px 0 rgba(78,84,200,0.10);
+            background: rgba(255,255,255,0.95);
+            padding: 2.5rem 2.5rem 2rem 2.5rem;
+            display: flex;
+            flex-direction: row;
+            gap: 32px;
+            min-height: 700px;
+        }
+        
+        @media (max-width: 768px) {
+            .main-content {
+                flex-direction: column;
+                gap: 20px;
+            }
+        }
+        
+        .left-panel, .right-panel {
+            flex: 1 1 0;
+            min-width: 320px;
+        }
+        
+        .right-panel {
+            min-height: 600px;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .section {
+            margin-bottom: 20px;
+            padding: 15px;
+            background-color: var(--light-color);
+            border-radius: var(--border-radius);
+        }
+        
+        h3 {
+            margin-bottom: 15px;
+            color: var(--primary-color);
+            border-bottom: 2px solid var(--primary-color);
+            padding-bottom: 8px;
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        .form-control {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: var(--border-radius);
+            font-size: 16px;
+        }
+        
+        .textarea {
+            width: 100%;
+            height: 300px;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: var(--border-radius);
+            font-size: 16px;
+            resize: vertical;
+        }
+        
+        .btn {
+            display: inline-block;
+            padding: 10px 20px;
+            border: none;
+            border-radius: var(--border-radius);
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-right: 10px;
+            margin-bottom: 10px;
+        }
+        
+        .btn-primary {
+            background-color: var(--primary-color);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background-color: #3a5a8f;
+            transform: translateY(-2px);
+        }
+        
+        .btn-secondary {
+            background-color: var(--secondary-color);
+            color: white;
+        }
+        
+        .btn-secondary:hover {
+            background-color: #5a6268;
+            transform: translateY(-2px);
+        }
+        
+        .status {
+            padding: 10px;
+            border-radius: var(--border-radius);
+            margin-top: 15px;
+            font-weight: bold;
+        }
+        
+        .ready {
+            background-color: #d4edda;
+            color: #155724;
+        }
+        
+        .processing {
+            background-color: #fff3cd;
+            color: #856404;
+        }
+        
+        .error {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+        
+        .progress-bar {
+            width: 100%;
+            height: 10px;
+            background-color: #e9ecef;
+            border-radius: 5px;
+            margin-top: 15px;
+            overflow: hidden;
+            display: none;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background-color: var(--primary-color);
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+        
+        .tabs {
+            display: flex;
+            border-bottom: 1px solid #ddd;
+            margin-bottom: 15px;
+        }
+        
+        .tab {
+            padding: 10px 20px;
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+        }
+        
+        .tab.active {
+            border-bottom-color: var(--primary-color);
+            font-weight: bold;
+            color: var(--primary-color);
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        .loading-spinner {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid rgba(255,255,255,.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s ease-in-out infinite;
+            margin-right: 8px;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        .model-info {
+            font-size: 14px;
+            color: var(--secondary-color);
+            margin-top: 5px;
+        }
+        
+        .file-info {
+            margin-top: 10px;
+            font-size: 14px;
+            color: var(--secondary-color);
+        }
+        
+        .word-count {
+            text-align: right;
+            font-size: 14px;
+            color: var(--secondary-color);
+            margin-top: 5px;
+        }
+        
+        .hidden-settings {
+            display: none;
+        }
+        
+        @media (max-width: 768px) {
+            .main-content {
+                flex-direction: column;
+            }
+        }
+        
+        .tab-content textarea {
+            min-height: 300px;
+            height: 400px;
+            max-height: 600px;
+        }
+    </style>
+    <script type="module">
+        import { pipeline, env } from 'https://cdn.jsdelivr.net/npm/@xenova/transformers@2.17.2';
+        
+        // Configure the environment for better browser compatibility
+        env.allowRemoteModels = true;
+        env.allowLocalModels = false;
+        
+        window.pipeline = pipeline;
+        window.transformersReady = true;
+    </script>
+</head>
+<body>
+    <div class="container">
+      
+        
+        <div class="main-content">
+            <div class="left-panel">
+                <div class="section">
+                    <h3>Input Options</h3>
+                    <div class="form-group">
+                        <label for="fileInput">Upload a text file:</label>
+                        <input type="file" id="fileInput" class="form-control" accept=".txt,.pdf,.doc,.docx">
+                        <p class="file-info" id="fileInfo">No file selected</p>
+                    </div>
+                    <button id="browseBtn" class="btn btn-secondary">Choose File</button>
+                    <p>or</p>
+                    <div class="form-group">
+                        <label for="inputText">Paste conversation directly:</label>
+                        <textarea id="inputText" class="textarea" placeholder="Paste your doctor-patient conversation here..."></textarea>
+                        <div class="word-count"><span id="wordCount">0</span> words</div>
+                    </div>
+                </div>
+
+                <!-- Hidden Analysis Settings -->
+                <div class="hidden-settings">
+                    <div class="form-group">
+                        <label for="modelSelect">AI Model:</label>
+                        <select id="modelSelect" class="form-control">
+                            <option value="Xenova/distilgpt2">DistilGPT-2 (Fast)</option>
+                            <option value="Xenova/gpt2">GPT-2 (Standard)</option>
+                            <option value="Xenova/gpt2-medium">GPT-2 Medium (Better)</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="temperature">Creativity: <span id="tempValue">0.7</span></label>
+                        <input type="range" id="temperature" class="form-control" min="0.1" max="1.5" step="0.1" value="0.7">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="maxLength">Response Length: <span id="lengthValue">150</span> tokens</label>
+                        <input type="range" id="maxLength" class="form-control" min="50" max="300" step="10" value="150">
+                    </div>
+                </div>
+
+                <button id="analyzeBtn" class="btn btn-primary">
+                    <span id="analyzeText">Analyze Conversation</span>
+                </button>
+
+                <div id="status" class="status ready">Ready to analyze</div>
+                <div id="progressBar" class="progress-bar" style="display: none;">
+                    <div id="progressFill" class="progress-fill"></div>
+                </div>
+            </div>
+
+            <div class="right-panel">
+                <h3>Analysis Results</h3>
+                <div class="tabs">
+                    <div class="tab active" data-tab="input">Input Conversation</div>
+                    <div class="tab" data-tab="output">Analysis Summary</div>
+                    
+                </div>
+
+                <div id="inputTab" class="tab-content active">
+                    <textarea id="inputDisplay" class="textarea" placeholder="Your conversation will appear here..." readonly></textarea>
+                </div>
+
+                <div id="outputTab" class="tab-content">
+                    <textarea id="outputText" class="textarea" placeholder="Analysis results will appear here..." readonly></textarea>
+                </div>
+                
+                
+                
+                <div class="section" style="margin-top: 20px;">
+                    <button id="copyBtn" class="btn btn-secondary">Copy Results</button>
+                    <button id="saveBtn" class="btn btn-secondary">Save as Text</button>
+                    <button id="clearBtn" class="btn btn-secondary">Clear All</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+const CHATGPT_API_KEY = 'YOUR_API_KEY_HERE';
+const CHATGPT_API_URL = 'https://api.openai.com/v1/chat/completions';
+const CHATGPT_MODEL = 'gpt-3.5-turbo';
+
+async function getChatGPTSummary(conversationText) {
+    const prompt = `Summarize this doctor-patient conversation in a concise, clear way for medical records:\n\n${conversationText}\n\nSummary:`;
+    try {
+        const response = await fetch(CHATGPT_API_URL, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${CHATGPT_API_KEY}`
+            },
+            body: JSON.stringify({
+                model: CHATGPT_MODEL,
+                messages: [
+                    { role: 'system', content: 'You are a medical assistant. Summarize doctor-patient conversations for medical records.' },
+                    { role: 'user', content: prompt }
+                ],
+                temperature: 0.3,
+                max_tokens: 1000
+            })
+        });
+        if (!response.ok) throw new Error('API error: ' + response.status);
+        const data = await response.json();
+        return data.choices[0]?.message?.content?.trim() || 'No summary returned.';
+    } catch (err) {
+        return 'Error: ' + err.message;
+    }
+}
+
+// Replace MedVoiceApp analyzeConversation method
+class MedVoiceApp {
+    constructor() {
+        this.model = null;
+        this.tokenizer = null;
+        this.isProcessing = false;
+        this.currentModel = 'Xenova/distilgpt2';
+        this.modelDescriptions = {
+            'Xenova/distilgpt2': 'Fast and efficient model for quick analysis',
+            'Xenova/gpt2': 'Standard model with better accuracy',
+            'Xenova/gpt2-medium': 'Higher quality analysis but slower'
+        };
+        
+        // Default settings that run in the background
+        this.settings = {
+            temperature: 0.7,
+            maxLength: 150,
+            model: 'Xenova/distilgpt2'
+        };
+        
+        this.initializeElements();
+        this.bindEvents();
+        this.updateUI();
+    }
+
+    initializeElements() {
+        this.elements = {
+            fileInput: document.getElementById('fileInput'),
+            fileInfo: document.getElementById('fileInfo'),
+            browseBtn: document.getElementById('browseBtn'),
+            analyzeBtn: document.getElementById('analyzeBtn'),
+            analyzeText: document.getElementById('analyzeText'),
+            status: document.getElementById('status'),
+            progressBar: document.getElementById('progressBar'),
+            progressFill: document.getElementById('progressFill'),
+            inputText: document.getElementById('inputText'),
+            inputDisplay: document.getElementById('inputDisplay'),
+            outputText: document.getElementById('outputText'),
+            wordCount: document.getElementById('wordCount'),
+            tabs: document.querySelectorAll('.tab'),
+            tabContents: document.querySelectorAll('.tab-content'),
+            copyBtn: document.getElementById('copyBtn'),
+            saveBtn: document.getElementById('saveBtn'),
+            clearBtn: document.getElementById('clearBtn'),
+            diagnosisContent: document.getElementById('diagnosisContent'),
+            treatmentContent: document.getElementById('treatmentContent'),
+            followupContent: document.getElementById('followupContent'),
+            // Hidden settings elements
+            modelSelect: document.getElementById('modelSelect'),
+            temperature: document.getElementById('temperature'),
+            maxLength: document.getElementById('maxLength'),
+            tempValue: document.getElementById('tempValue'),
+            lengthValue: document.getElementById('lengthValue')
+        };
+    }
+
+    bindEvents() {
+        // Input text handling
+        this.elements.inputText.addEventListener('input', () => {
+            this.elements.inputDisplay.value = this.elements.inputText.value;
+            this.updateWordCount();
+        });
+
+        // File handling
+        this.elements.browseBtn.addEventListener('click', () => this.elements.fileInput.click());
+        this.elements.fileInput.addEventListener('change', (e) => this.handleFileSelect(e));
+
+        // Analysis
+        this.elements.analyzeBtn.addEventListener('click', () => this.analyzeConversation());
+
+        // Tab switching
+        this.elements.tabs.forEach(tab => {
+            tab.addEventListener('click', () => this.switchTab(tab.dataset.tab));
+        });
+
+        // Hidden settings updates
+        this.elements.modelSelect.addEventListener('change', () => {
+            this.settings.model = this.elements.modelSelect.value;
+        });
+        this.elements.temperature.addEventListener('input', () => {
+            this.settings.temperature = parseFloat(this.elements.temperature.value);
+            this.elements.tempValue.textContent = this.settings.temperature.toFixed(1);
+        });
+        this.elements.maxLength.addEventListener('input', () => {
+            this.settings.maxLength = parseInt(this.elements.maxLength.value);
+            this.elements.lengthValue.textContent = this.settings.maxLength;
+        });
+
+        // Action buttons
+        this.elements.copyBtn.addEventListener('click', () => this.copyResults());
+        this.elements.saveBtn.addEventListener('click', () => this.saveResults());
+        this.elements.clearBtn.addEventListener('click', () => this.clearAll());
+    }
+
+    updateUI() {
+        this.updateWordCount();
+    }
+
+    updateWordCount() {
+        const text = this.elements.inputText.value.trim();
+        const wordCount = text ? text.split(/\s+/).length : 0;
+        this.elements.wordCount.textContent = wordCount;
+    }
+
+    async handleFileSelect(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+
+        this.elements.fileInfo.textContent = `Selected: ${file.name} (${(file.size / 1024).toFixed(1)} KB)`;
+        
+        this.setStatus('Reading file...', 'processing');
+        
+        try {
+            let text = '';
+            if (file.type === 'text/plain') {
+                text = await this.readTextFile(file);
+            } else {
+                this.setStatus('File type requires conversion (simulated)', 'processing');
+                await new Promise(resolve => setTimeout(resolve, 1000));
+                text = `[Simulated content from ${file.name}]\n\nThis would contain the actual text extracted from the document in a real application.`;
+            }
+            
+            this.elements.inputText.value = text;
+            this.elements.inputDisplay.value = text;
+            this.updateWordCount();
+            this.setStatus('File loaded successfully', 'ready');
+        } catch (error) {
+            console.error('Error reading file:', error);
+            this.setStatus('Error reading file', 'error');
+        }
+    }
+
+    readTextFile(file) {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = (e) => resolve(e.target.result);
+            reader.onerror = () => reject(new Error('Failed to read file'));
+            reader.readAsText(file);
+        });
+    }
+
+    switchTab(tabName) {
+        this.elements.tabs.forEach(tab => {
+            tab.classList.toggle('active', tab.dataset.tab === tabName);
+        });
+
+        this.elements.tabContents.forEach(content => {
+            content.classList.toggle('active', content.id === `${tabName}Tab`);
+        });
+    }
+
+    async loadModel() {
+        if (this.tokenizer) return;
+
+        try {
+            this.setStatus('Loading model...', 'processing');
+            this.showProgress(20);
+
+            while (!window.transformersReady) {
+                await new Promise(resolve => setTimeout(resolve, 100));
+            }
+
+            this.setStatus('Downloading model (this may take a moment)...', 'processing');
+            this.showProgress(40);
+
+            this.tokenizer = await window.pipeline('text-generation', this.settings.model, {
+                quantized: true,
+                progress_callback: (progress) => {
+                    if (progress.status === 'downloading') {
+                        const percent = Math.round((progress.loaded / progress.total) * 50) + 40;
+                        this.showProgress(percent);
+                        this.setStatus(`Downloading model: ${Math.round((progress.loaded / progress.total) * 100)}%`, 'processing');
+                    }
+                }
+            });
+            
+            this.showProgress(100);
+            this.setStatus('Model loaded successfully', 'ready');
+        } catch (error) {
+            console.error('Error loading model:', error);
+            this.setStatus(`Error loading model: ${error.message}`, 'error');
+            throw error;
+        }
+    }
+
+    async analyzeConversation() {
+        if (this.isProcessing) return;
+        const inputText = this.elements.inputText.value.trim();
+        if (!inputText) {
+            this.setStatus('Please provide input conversation text', 'error');
+            return;
+        }
+        this.isProcessing = true;
+        this.elements.analyzeBtn.disabled = true;
+        this.elements.analyzeText.innerHTML = '<span class="loading-spinner"></span>Analyzing...';
+        try {
+            this.setStatus('', 'processing');
+            const summary = await getChatGPTSummary(inputText);
+            this.displayResults(summary, { diagnoses: '-', treatments: '-', followups: '-' });
+            this.setStatus('Analysis complete', 'ready');
+            // Scroll status into view for visibility
+            if (this.elements.status && typeof this.elements.status.scrollIntoView === 'function') {
+                this.elements.status.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+            this.switchTab('output');
+        } 
+         finally {
+            this.isProcessing = false;
+            this.elements.analyzeBtn.disabled = false;
+            this.elements.analyzeText.textContent = 'Analyze Conversation';
+        }
+    }
+
+    extractSection(text, startMarker, endMarker) {
+        const startIndex = text.indexOf(startMarker);
+        if (startIndex === -1) return null;
+        
+        let section = text.substring(startIndex + startMarker.length);
+        if (endMarker) {
+            const endIndex = section.indexOf(endMarker);
+            if (endIndex !== -1) {
+                section = section.substring(0, endIndex).trim();
+            }
+        }
+        
+        return section.trim();
+    }
+
+    displayResults(summary, details) {
+        const timestamp = new Date().toLocaleString();
+        const formattedOutput = `=== Conversation Analysis Report ===
+Timestamp: ${timestamp}
+
+
+--- Summary ---
+${summary}
+
+`;
+
+        this.elements.outputText.value = formattedOutput;
+        
+        this.elements.diagnosisContent.textContent = details.diagnoses;
+        this.elements.treatmentContent.textContent = details.treatments;
+        this.elements.followupContent.textContent = details.followups;
+    }
+
+    copyResults() {
+        if (!this.elements.outputText.value) {
+            this.setStatus('No results to copy', 'error');
+            return;
+        }
+        
+        this.elements.outputText.select();
+        document.execCommand('copy');
+        this.setStatus('Results copied to clipboard', 'ready');
+    }
+
+    saveResults() {
+        if (!this.elements.outputText.value) {
+            this.setStatus('No results to save', 'error');
+            return;
+        }
+        
+        const blob = new Blob([this.elements.outputText.value], { type: 'text/plain' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `medvoice_analysis_${new Date().toISOString().slice(0, 10)}.txt`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        
+        this.setStatus('Results saved as text file', 'ready');
+    }
+
+    clearAll() {
+        if (confirm('Are you sure you want to clear all inputs and results?')) {
+            this.elements.inputText.value = '';
+            this.elements.inputDisplay.value = '';
+            this.elements.outputText.value = '';
+            this.elements.diagnosisContent.textContent = '-';
+            this.elements.treatmentContent.textContent = '-';
+            this.elements.followupContent.textContent = '-';
+            this.elements.fileInput.value = '';
+            this.elements.fileInfo.textContent = 'No file selected';
+            this.updateWordCount();
+            this.setStatus('All inputs and results cleared', 'ready');
+        }
+    }
+
+    setStatus(message, type = 'ready') {
+        this.elements.status.textContent = message;
+        this.elements.status.className = `status ${type}`;
+    }
+
+    showProgress(percentage) {
+        this.elements.progressBar.style.display = 'block';
+        this.elements.progressFill.style.width = `${percentage}%`;
+    }
+
+    hideProgress() {
+        this.elements.progressBar.style.display = 'none';
+        this.elements.progressFill.style.width = '0%';
+    }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    const checkReady = () => {
+        if (window.transformersReady) {
+            new MedVoiceApp();
+        } else {
+            setTimeout(checkReady, 100);
+        }
+    };
+    checkReady();
+});
+    </script>
+</body>
+</html>

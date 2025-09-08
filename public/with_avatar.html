@@ -1,0 +1,1118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Medical Assistant</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #f0f8ff 0%, #e6f3ff 100%);
+            min-height: 100vh;
+            display: flex;
+        }
+
+        .header {
+            background: white;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            padding: 1rem;
+        }
+
+        .header-content {
+            max-width: 1024px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .heart-icon {
+            width: 2rem;
+            height: 2rem;
+            color: #ef4444;
+        }
+
+        .header-title {
+            font-size: 1.25rem;
+            font-weight: bold;
+            color: #1f2937;
+            margin: 0;
+        }
+
+        .header-subtitle {
+            font-size: 0.875rem;
+            color: #6b7280;
+            margin: 0;
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .voice-button {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.25rem 0.75rem;
+            border-radius: 0.5rem;
+            font-size: 0.875rem;
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .voice-button.enabled {
+            background: #dcfce7;
+            color: #15803d;
+        }
+
+        .voice-button.disabled {
+            background: #f3f4f6;
+            color: #374151;
+        }
+
+        .status-info {
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+            font-size: 0.875rem;
+            color: #6b7280;
+        }
+
+        .emergency-info {
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+            font-size: 0.875rem;
+            color: #dc2626;
+        }
+
+        .container {
+            max-width: 1024px;
+            margin: 0 auto;
+            padding: 1rem;
+            flex: 1;
+        }
+
+        .quick-actions {
+            margin-bottom: 1.5rem;
+        }
+
+        .quick-actions h3 {
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: #1f2937;
+            margin-bottom: 0.75rem;
+        }
+
+        .quick-actions-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 0.75rem;
+        }
+
+        .quick-action-btn {
+            background: white;
+            padding: 0.75rem;
+            border-radius: 0.5rem;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            border: 1px solid #e5e7eb;
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: #374151;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .quick-action-btn:hover {
+            background: #f9fafb;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .chat-container {
+            background: white;
+            border-radius: 0.75rem;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .messages-container {
+            height: 24rem;
+            overflow-y: auto;
+            padding: 1rem;
+            background: #fafafa;
+        }
+
+        .message {
+            display: flex;
+            margin-bottom: 1rem;
+            align-items: flex-start;
+            gap: 0.75rem;
+        }
+
+        .message.user {
+            flex-direction: row-reverse;
+        }
+
+        .message-avatar {
+            width: 2rem;
+            height: 2rem;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .message-avatar.user {
+            background: #3b82f6;
+            color: white;
+        }
+
+        .message-avatar.bot {
+            background: #f3f4f6;
+            color: #6b7280;
+        }
+
+        .message-content {
+            max-width: 70%;
+            padding: 0.75rem;
+            border-radius: 0.5rem;
+            position: relative;
+        }
+
+        .message-content.user {
+            background: #3b82f6;
+            color: white;
+        }
+
+        .message-content.bot {
+            background: #f3f4f6;
+            color: #1f2937;
+        }
+
+        .message-text {
+            font-size: 0.875rem;
+            line-height: 1.4;
+            white-space: pre-wrap;
+        }
+
+        .message-time {
+            font-size: 0.75rem;
+            margin-top: 0.25rem;
+            opacity: 0.7;
+        }
+
+        .speaking-indicator {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.875rem;
+            color: #6b7280;
+        }
+
+        .typing-indicator {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 1rem;
+        }
+
+        .typing-dots {
+            display: flex;
+            gap: 0.25rem;
+        }
+
+        .typing-dot {
+            width: 0.5rem;
+            height: 0.5rem;
+            background: #9ca3af;
+            border-radius: 50%;
+            animation: bounce 1.4s infinite both;
+        }
+
+        .typing-dot:nth-child(2) {
+            animation-delay: 0.1s;
+        }
+
+        .typing-dot:nth-child(3) {
+            animation-delay: 0.2s;
+        }
+
+        @keyframes bounce {
+            0%, 80%, 100% { transform: scale(0); }
+            40% { transform: scale(1); }
+        }
+
+        .input-container {
+            border-top: 1px solid #e5e7eb;
+            padding: 1rem;
+            background: white;
+        }
+
+        .input-row {
+            display: flex;
+            gap: 0.5rem;
+            align-items: center;
+        }
+
+        .message-input {
+            flex: 1;
+            padding: 0.5rem 1rem;
+            border: 1px solid #d1d5db;
+            border-radius: 9999px;
+            font-size: 0.875rem;
+            outline: none;
+            transition: all 0.2s;
+        }
+
+        .message-input:focus {
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+
+        .send-button {
+            background: #3b82f6;
+            color: white;
+            border: none;
+            padding: 0.5rem 1.5rem;
+            border-radius: 9999px;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .send-button:hover {
+            background: #2563eb;
+        }
+
+        .disclaimer {
+            margin-top: 0.75rem;
+            font-size: 0.75rem;
+            color: #6b7280;
+            text-align: center;
+        }
+
+        .avatar-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+
+        .avatar-content {
+            background: white;
+            border-radius: 1.5rem;
+            padding: 2rem;
+            max-width: 28rem;
+            width: 90%;
+            text-align: center;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.25);
+        }
+
+        .avatar-face {
+            width: 8rem;
+            height: 8rem;
+            margin: 0 auto 1rem;
+            position: relative;
+        }
+
+        .avatar-head {
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #fce7f3 0%, #ddd6fe 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .avatar-hair {
+            position: absolute;
+            top: -0.5rem;
+            left: -0.5rem;
+            right: -0.5rem;
+            height: 4rem;
+            background: linear-gradient(180deg, #d97706 0%, #b45309 100%);
+            border-radius: 50% 50% 0 0;
+        }
+
+        .avatar-eyes {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .avatar-eye {
+            width: 0.75rem;
+            height: 0.75rem;
+            background: #1f2937;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        .avatar-nose {
+            width: 0.25rem;
+            height: 0.25rem;
+            background: #f472b6;
+            border-radius: 50%;
+            margin: 0 auto 0.5rem;
+        }
+
+        .avatar-mouth {
+            width: 1.5rem;
+            height: 0.75rem;
+            background: #ef4444;
+            border-radius: 50%;
+            margin: 0 auto;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .avatar-mouth.speaking {
+            animation: pulse 0.5s infinite;
+        }
+
+        .avatar-mouth-inner {
+            width: 100%;
+            height: 100%;
+            background: #dc2626;
+            border-radius: 50%;
+            animation: ping 1s infinite;
+        }
+
+        .avatar-border {
+            position: absolute;
+            inset: 0;
+            border: 4px solid #10b981;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        .sound-waves {
+            position: absolute;
+            inset: -2rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .sound-wave {
+            position: absolute;
+            border: 2px solid #93c5fd;
+            border-radius: 50%;
+            animation: ping 2s infinite;
+        }
+
+        .sound-wave:nth-child(1) {
+            width: 10rem;
+            height: 10rem;
+            opacity: 0.75;
+        }
+
+        .sound-wave:nth-child(2) {
+            width: 12rem;
+            height: 12rem;
+            opacity: 0.5;
+            animation-delay: 0.2s;
+        }
+
+        .sound-wave:nth-child(3) {
+            width: 14rem;
+            height: 14rem;
+            opacity: 0.25;
+            animation-delay: 0.4s;
+        }
+
+        .avatar-name {
+            font-size: 1.25rem;
+            font-weight: bold;
+            color: #1f2937;
+            margin-bottom: 0.5rem;
+        }
+
+        .avatar-title {
+            font-size: 0.875rem;
+            color: #6b7280;
+            margin-bottom: 1rem;
+        }
+
+        .avatar-status {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .avatar-status-text {
+            color: #059669;
+            font-weight: 500;
+        }
+
+        .speech-visualizer {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.25rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .speech-bar {
+            width: 0.5rem;
+            background: #3b82f6;
+            border-radius: 0.25rem;
+            transition: height 0.1s;
+        }
+
+        .speech-bar.active {
+            animation: pulse 0.5s infinite;
+        }
+
+        .stop-button {
+            background: #ef4444;
+            color: white;
+            border: none;
+            padding: 0.5rem 1.5rem;
+            border-radius: 9999px;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin: 0 auto;
+        }
+
+        .stop-button:hover {
+            background: #dc2626;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        @keyframes ping {
+            0% { transform: scale(1); opacity: 1; }
+            75%, 100% { transform: scale(2); opacity: 0; }
+        }
+
+        /* Icons */
+        .icon {
+            width: 1rem;
+            height: 1rem;
+            fill: currentColor;
+        }
+
+        .icon-lg {
+            width: 1.25rem;
+            height: 1.25rem;
+        }
+
+        .icon-xl {
+            width: 2rem;
+            height: 2rem;
+        }
+
+        @media (max-width: 768px) {
+            .header-content {
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            .header-right {
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+
+            .quick-actions-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .message-content {
+                max-width: 85%;
+            }
+        }
+
+        /* Sidebar styles */
+        #sidebar {
+            width: 220px;
+            background: #232946;
+            color: #fff;
+            display: flex;
+            flex-direction: column;
+            align-items: stretch;
+            padding-top: 2rem;
+            min-height: 100vh;
+            box-shadow: 2px 0 16px rgba(44,54,80,0.08);
+        }
+
+        #sidebar button {
+            background: none;
+            border: none;
+            color: #fff;
+            padding: 0.75rem 1rem;
+            text-align: left;
+            width: 100%;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        #sidebar button:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        #sidebar-offline {
+            background: #4e54c8;
+        }
+
+        #sidebar-online {
+            background: #43b581;
+        }
+
+        #sidebar-ai {
+            background: #3b82f6;
+        }
+    </style>
+</head>
+<body style="margin:0; padding:0; min-height:100vh; width:100vw; box-sizing:border-box;">
+    <div style="display: flex; flex-direction: row; width: 100vw; min-height: 100vh;">
+        <!-- Sidebar (left) -->
+        <div id="sidebar" style="width: 220px; background: #232946; color: #fff; display: flex; flex-direction: column; align-items: stretch; padding-top: 2rem; min-height: 100vh; box-shadow: 2px 0 16px rgba(44,54,80,0.08); gap: 1vh;">
+            <a href="index.html" style="text-decoration:none;">
+                <button id="sidebar-offline" class="btn mb-3 mx-3" style="background:#4e54c8; color:#fff; font-size:1.15rem; border-radius:12px; border:2px solid #fff; box-shadow:0 2px 8px rgba(44,54,80,0.08); width:95%">Offline</button>
+            </a>
+            <a href="http://zeromeeting-git-main-rakshas-projects-a67f3660.vercel.app" style="text-decoration:none;">
+                <button id="sidebar-online" class="btn mb-3 mx-3" style="background:#43b581; color:#fff; font-size:1.15rem; border-radius:12px; border:2px solid #fff; box-shadow:0 2px 8px rgba(44,54,80,0.08); width:95%;">Online</button>
+            </a>
+            <a href="#" style="text-decoration:none;">
+                <button id="sidebar-ai" class="btn mb-3 mx-3" style="background:#3b82f6; color:#fff; font-size:1.15rem; border-radius:12px; border:2px solid #fff; box-shadow:0 2px 8px rgba(44,54,80,0.08); width:95%;">AI Assistant</button>
+            </a>
+        </div>
+        <!-- Main Content Area -->
+        <div style="flex: 1 1 0; display: flex; flex-direction: column;">
+            <!-- Header -->
+            <div class="header">
+                <div class="header-content">
+                    <div class="header-left">
+                        <svg class="heart-icon" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+                        </svg>
+                        <div>
+                            <h1 class="header-title">Zerkost AI Medical Assistant</h1>
+                            <p class="header-subtitle">Your Personal Health Assistant</p>
+                        </div>
+                    </div>
+                    <div class="header-right">
+                        <button id="voiceToggle" class="voice-button enabled">
+                            <svg class="icon" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/>
+                            </svg>
+                            <span>Voice On</span>
+                        </button>
+                        <div class="status-info">
+                            <svg class="icon" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+                            </svg>
+                            Available 24/7
+                        </div>
+                        <!-- <div class="emergency-info">
+                            <svg class="icon" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M20.01 15.38c-1.23 0-2.42-.2-3.53-.56-.35-.12-.74-.03-1.01.24l-1.57 1.97c-2.83-1.35-5.48-3.9-6.89-6.83l1.95-1.66c.27-.28.35-.67.24-1.02-.37-1.11-.56-2.3-.56-3.53 0-.54-.45-.99-.99-.99H4.19C3.65 3 3 3.24 3 3.99 3 13.28 10.73 21 20.01 21c.71 0 .99-.63.99-1.18v-3.45c0-.54-.45-.99-.99-.99z"/>
+                            </svg>
+                            Emergency: 911
+                        </div> -->
+                    </div>
+                </div>
+            </div>
+            <div class="container">
+        <!-- Quick Actions -->
+        <h3>Note: "In the absence of the doctor, I will assist you. I will communicate only based on the information provided by the doctor."</h3><br>
+        <div class="quick-actions">
+            <h3>Quick Actions</h3>
+            <div class="quick-actions-grid">
+                <button class="quick-action-btn" onclick="setQuickMessage('I have symptoms I need help with')">Check Symptoms</button>
+                <button class="quick-action-btn" onclick="setQuickMessage('I have questions about my medication')">Medication Info</button>
+                <button class="quick-action-btn" onclick="setQuickMessage('I need general health advice')">General Health</button>
+                <button class="quick-action-btn" onclick="setQuickMessage('This is an emergency situation')">Emergency Help</button>
+            </div>
+        </div>
+
+        <!-- Chat Interface -->
+        <div class="chat-container">
+            <div class="messages-container" id="messagesContainer">
+                <div class="message">
+                    <div class="message-avatar bot">
+                        <svg class="icon" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M20 9V7c0-1.1-.9-2-2-2h-3c0-1.66-1.34-3-3-3S9 3.34 9 5H6c-1.1 0-2 .9-2 2v2c-1.66 0-3 1.34-3 3s1.34 3 3 3v4c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2v-4c1.66 0 3-1.34 3-3s-1.34-3-3-3zM9 12c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zm6 0c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1z"/>
+                        </svg>
+                    </div>
+                    <div class="message-content bot">
+                        <div class="message-text">Hello! I'm your AI Medical Assistant. I can help with basic health questions, symptom assessment, and general medical information while your doctor is unavailable. Please remember that I cannot replace professional medical advice, and for emergencies, please call emergency services immediately.</div>
+                        <div class="message-time" id="initialTime"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="input-container">
+                <div class="input-row">
+                    <input type="text" id="messageInput" class="message-input" placeholder="Describe your symptoms or ask a health question..." onkeypress="handleKeyPress(event)">
+                    <button class="send-button" onclick="sendMessage()">
+                        <svg class="icon-lg" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M21,11.5A8.38,8.38,0,0,1,14.5,18.5H12A1,1,0,0,1,11,17.5V15A1,1,0,0,1,12,14h2.5A6.5,6.5,0,0,0,21,7.5C21,6.94,20.88,6.41,20.66,5.94A9.97,9.97,0,0,0,12,2a10,10,0,0,0,0,20,9.97,9.97,0,0,0,8.66-3.94C20.88,17.59,21,17.06,21,16.5V11.5Z"/>
+                        </svg>
+                    </button>
+                </div>
+                <!-- <div class="disclaimer">
+                    ⚠️ This AI provides general health information only. For emergencies, call 911. Always consult healthcare professionals for medical decisions.
+                </div> -->
+            </div>
+        </div>
+    </div>
+
+    <!-- AI Avatar Modal -->
+    <div id="avatarModal" class="avatar-modal hidden">
+        <div class="avatar-content">
+            <div class="avatar-face">
+                <div class="avatar-head">
+                    <div class="avatar-hair"></div>
+                    <div>
+                        <div class="avatar-eyes">
+                            <div class="avatar-eye"></div>
+                            <div class="avatar-eye"></div>
+                        </div>
+                        <div class="avatar-nose"></div>
+                        <div class="avatar-mouth" id="avatarMouth">
+                            <div class="avatar-mouth-inner"></div>
+                        </div>
+                    </div>
+                    <div class="avatar-border"></div>
+                </div>
+                <div class="sound-waves">
+                    <div class="sound-wave"></div>
+                    <div class="sound-wave"></div>
+                    <div class="sound-wave"></div>
+                </div>
+            </div>
+            
+            <h3 class="avatar-name">AI Assistant</h3>
+            <p class="avatar-title">Your Medical Assistant</p>
+            
+            <div class="avatar-status">
+                <svg class="icon" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M12 2c5.514 0 10 4.486 10 10s-4.486 10-10 10-10-4.486-10-10 4.486-10 10-10zm0-2c-6.627 0-12 5.373-12 12s5.373 12 12 12 12-5.373 12-12-5.373-12-12-12zm-1.5 17.5l-3.5-3.5 1.4-1.4 2.1 2.1 4.1-4.1 1.4 1.4-5.5 5.5z"/>
+                </svg>
+                <span class="avatar-status-text">Speaking...</span>
+            </div>
+            
+            <div class="speech-visualizer">
+                <div class="speech-bar active" style="height: 20px;"></div>
+                <div class="speech-bar active" style="height: 15px;"></div>
+                <div class="speech-bar active" style="height: 25px;"></div>
+                <div class="speech-bar active" style="height: 18px;"></div>
+                <div class="speech-bar active" style="height: 22px;"></div>
+            </div>
+            
+            <button class="stop-button" onclick="stopSpeaking()">
+                <svg class="icon" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M16.5 12c0-1.77-1.02-3.29-2.5-4.03v2.21l2.45 2.45c.03-.2.05-.41.05-.63zm2.5 0c0 .94-.2 1.82-.54 2.64l1.51 1.51C20.63 14.91 21 13.5 21 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zM4.27 3L3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06c1.38-.31 2.63-.95 3.69-1.81L19.73 21 21 19.73l-9-9L4.27 3zM12 4L9.91 6.09 12 8.18V4z"/>
+                </svg>
+                Stop Speaking
+            </button>
+        </div>
+    </div>
+
+
+    <script>
+        // Global variables
+        let messages = [];
+        let isTyping = false;
+        let isSpeaking = false;
+        let voiceEnabled = true;
+        let showAvatar = false;
+        let currentlySpeaking = '';
+        let speechSynthesis = null;
+        let currentUtterance = null;
+
+        // Medical responses database
+        const medicalResponses = {
+            'my name is ': "Thank you for sharing your name, i'm AI Assistant!! How can i help you",
+            'headache': "For headaches, try: Rest in a quiet, dark room, apply cold or warm compress, stay hydrated, and consider over-the-counter pain relievers if appropriate. Seek immediate care if headache is severe, sudden, or accompanied by fever, stiff neck, vision changes, or confusion.",
+            'fever': "For fever: Rest, drink plenty of fluids, use cooling measures, and monitor temperature. Consult a doctor if fever exceeds 103 degrees Fahrenheit, lasts more than 3 days, or is accompanied by severe symptoms like difficulty breathing, chest pain, or persistent vomiting.",
+            'cough': "For cough: Stay hydrated, use honey for ages 1 and up, consider a humidifier, and avoid irritants. Seek medical attention if cough persists over 2 to 3 weeks, produces blood, or is accompanied by high fever, shortness of breath, or chest pain.",
+            'cold': "For cold symptoms: Rest, drink warm fluids, use saline nasal spray, and consider throat lozenges. Most colds resolve in 7 to 10 days. See a doctor if symptoms worsen after a few days or include high fever, severe headache, or difficulty breathing.",
+            'sore throat': "For sore throat: Gargle with warm salt water, drink warm liquids, use throat lozenges, and get adequate rest. Consult a doctor if throat pain is severe, persists over a week, or is accompanied by high fever, difficulty swallowing, or white patches.",
+            'stomach pain': "For stomach pain: Try gentle foods like the BRAT diet, stay hydrated, apply heat, and rest. Seek immediate care for severe pain, persistent vomiting, blood in vomit or stool, fever with abdominal pain, or signs of dehydration.",
+            'nausea': "For nausea: Try small, frequent meals, ginger tea, avoid strong odors, and stay hydrated with clear fluids. Contact a doctor if vomiting persists, you show signs of dehydration, or experience severe abdominal pain.",
+            'diarrhea': "For diarrhea: Stay hydrated with clear fluids, try the BRAT diet, avoid dairy and fatty foods. Seek medical help if diarrhea lasts more than 2 to 3 days, is accompanied by high fever, severe dehydration, or blood in stool.",
+            'chest pain': "Important: Any chest pain should be evaluated by a medical professional. If experiencing severe chest pain, especially with shortness of breath, sweating, or nausea, call emergency services immediately. This could be a heart attack.",
+            'shortness of breath': "Important: Difficulty breathing can be serious. If experiencing severe shortness of breath, chest pain, or bluish lips or face, call emergency services immediately. For mild breathlessness, try sitting upright and breathing slowly.",
+            'allergic reaction': "For mild allergic reactions: Remove the allergen, take antihistamines if available, apply cold compresses to itchy areas. For severe reactions with difficulty breathing, swelling of face or throat, or rapid pulse, call emergency services immediately.",
+            'cut': "For minor cuts: Clean hands, apply direct pressure to stop bleeding, clean the wound with water, apply antibiotic ointment, and cover with bandage. Seek medical attention for deep cuts, if bleeding won't stop, or signs of infection develop.",
+            'burn': "For minor burns: Cool with running water for 10 to 20 minutes, remove jewelry near the area, apply aloe vera or cool compress, take pain relievers if needed. Seek medical attention for burns larger than 3 inches, burns on face, hands, or genitals, or severe pain.",
+            'sprain': "For sprains: Use the RICE method - Rest, Ice for 15 to 20 minutes every 2 to 3 hours, Compression with elastic bandage, Elevation above heart level. Take over-the-counter pain relievers. See a doctor if unable to bear weight or if severe pain or swelling persists.",
+            'insomnia': "For sleep issues: Maintain regular sleep schedule, create comfortable sleep environment, avoid caffeine and screens before bed, try relaxation techniques. If insomnia persists for weeks or affects daily functioning, consult a healthcare provider.",
+            'anxiety': "For anxiety: Practice deep breathing, try progressive muscle relaxation, engage in regular exercise, maintain social connections. If anxiety is severe, persistent, or interfering with daily life, please seek professional mental health support.",
+            'depression': "If experiencing persistent sadness, loss of interest, or thoughts of self-harm, please reach out to a mental health professional immediately. Crisis hotlines are available 24 hours a day, 7 days a week. You're not alone, and help is available.",
+            'medication': "For medication questions: Always follow prescription labels, take medications as directed, don't share medications, and consult with pharmacist or doctor about side effects or interactions. Never stop prescribed medications without consulting your healthcare provider.",
+            'emergency': "Emergency situations: Call emergency services immediately for: Chest pain, Difficulty breathing, Severe bleeding, Loss of consciousness, Severe burns, Suspected stroke with FAST signs, Severe allergic reactions, Thoughts of self-harm"
+        };
+
+        // Initialize the app
+        function init() {
+            // Set initial timestamp
+            document.getElementById('initialTime').textContent = new Date().toLocaleTimeString();
+            
+            // Initialize speech synthesis
+            if ('speechSynthesis' in window) {
+                speechSynthesis = window.speechSynthesis;
+                
+                // Load voices
+                const loadVoices = () => {
+                    const voices = speechSynthesis.getVoices();
+                    console.log('Available voices:', voices);
+                };
+                
+                if (speechSynthesis.onvoiceschanged !== undefined) {
+                    speechSynthesis.onvoiceschanged = loadVoices;
+                }
+                loadVoices();
+            }
+            
+            // Add initial message to messages array
+            messages.push({
+                type: 'bot',
+                message: "Hello! I'm your AI Medical Assistant. I can help with basic health questions, symptom assessment, and general medical information while your doctor is unavailable. Please remember that I cannot replace professional medical advice, and for emergencies, please call emergency services immediately.",
+                timestamp: new Date().toLocaleTimeString()
+            });
+        }
+
+        // Handle key press in input
+        function handleKeyPress(event) {
+            if (event.key === 'Enter') {
+                sendMessage();
+            }
+        }
+
+        // Set quick message
+        function setQuickMessage(message) {
+            document.getElementById('messageInput').value = message;
+        }
+
+        // Send message
+        function sendMessage() {
+            const input = document.getElementById('messageInput');
+            const messageText = input.value.trim();
+            
+            if (!messageText) return;
+
+            // Add user message
+            const userMessage = {
+                type: 'user',
+                message: messageText,
+                timestamp: new Date().toLocaleTimeString()
+            };
+            messages.push(userMessage);
+            
+            // Clear input
+            input.value = '';
+            
+            // Update UI
+            renderMessages();
+            showTyping();
+            
+            // Generate response
+            setTimeout(() => {
+                const response = getResponse(messageText);
+                const botMessage = {
+                    type: 'bot',
+                    message: response,
+                    timestamp: new Date().toLocaleTimeString()
+                };
+                messages.push(botMessage);
+                
+                hideTyping();
+                renderMessages();
+                
+                // Speak the response
+                if (voiceEnabled) {
+                    speakText(response);
+                }
+            }, 1000);
+        }
+
+        // Get AI response
+        function getResponse(userMessage) {
+            const message = userMessage.toLowerCase();
+            
+            // Check for emergency keywords
+            if (message.includes('emergency') || message.includes('911') || message.includes('urgent')) {
+                return medicalResponses.emergency;
+            }
+            
+            // Check for specific symptoms/conditions
+            for (const [key, response] of Object.entries(medicalResponses)) {
+                if (message.includes(key)) {
+                    return response;
+                }
+            }
+            
+            // General health advice
+            if (message.includes('general') || message.includes('health') || message.includes('wellness')) {
+                return "For general health: Maintain a balanced diet, exercise regularly, get adequate sleep of 7 to 9 hours, manage stress, stay hydrated, and have regular check-ups with your healthcare provider. If you have specific symptoms or concerns, please describe them for more targeted advice.";
+            }
+            
+            // Default response
+            return "I'd be happy to help with your health concern. Could you please describe your symptoms in more detail? For example, are you experiencing pain, discomfort, or other specific symptoms? Remember, for any severe or emergency symptoms, please contact emergency services immediately.";
+        }
+
+        // Speak text
+        function speakText(text) {
+            if (!voiceEnabled || !speechSynthesis) return;
+            
+            // Cancel any ongoing speech
+            speechSynthesis.cancel();
+            
+            // Clean text for better speech
+            const cleanText = text.replace(/[⚠️🚨]/g, '').replace(/F\.A\.S\.T\./g, 'FAST');
+            
+            const utterance = new SpeechSynthesisUtterance(cleanText);
+            
+            // Configure voice settings
+            const voices = speechSynthesis.getVoices();
+            
+            // Try to find a female voice
+            const femaleVoice = voices.find(voice => 
+                voice.name.toLowerCase().includes('female') ||
+                voice.name.toLowerCase().includes('woman') ||
+                voice.name.toLowerCase().includes('zira') ||
+                voice.name.toLowerCase().includes('susan') ||
+                voice.name.toLowerCase().includes('hazel') ||
+                voice.name.toLowerCase().includes('karen') ||
+                voice.name.toLowerCase().includes('samantha') ||
+                voice.gender === 'female'
+            );
+            
+            if (femaleVoice) {
+                utterance.voice = femaleVoice;
+            } else if (voices.length > 0) {
+                utterance.voice = voices[0];
+            }
+            
+            utterance.rate = 0.9;
+            utterance.pitch = 1.1;
+            utterance.volume = 0.8;
+            
+            utterance.onstart = () => {
+                isSpeaking = true;
+                showAvatar = true;
+                currentlySpeaking = text;
+                updateAvatarDisplay();
+                updateVoiceButton();
+            };
+            
+            utterance.onend = () => {
+                isSpeaking = false;
+                showAvatar = false;
+                currentlySpeaking = '';
+                updateAvatarDisplay();
+                updateVoiceButton();
+            };
+            
+            utterance.onerror = () => {
+                isSpeaking = false;
+                showAvatar = false;
+                currentlySpeaking = '';
+                updateAvatarDisplay();
+                updateVoiceButton();
+            };
+            
+            currentUtterance = utterance;
+            speechSynthesis.speak(utterance);
+        }
+
+        // Stop speaking
+        function stopSpeaking() {
+            if (speechSynthesis) {
+                speechSynthesis.cancel();
+            }
+            isSpeaking = false;
+            showAvatar = false;
+            currentlySpeaking = '';
+            updateAvatarDisplay();
+            updateVoiceButton();
+        }
+
+        // Toggle voice
+        function toggleVoice() {
+            if (isSpeaking) {
+                stopSpeaking();
+            } else {
+                voiceEnabled = !voiceEnabled;
+                updateVoiceButton();
+            }
+        }
+
+        // Update voice button
+        function updateVoiceButton() {
+            const button = document.getElementById('voiceToggle');
+            const icon = button.querySelector('.icon');
+            const text = button.querySelector('span');
+            
+            if (isSpeaking) {
+                button.className = 'voice-button disabled';
+                icon.innerHTML = `<path d="M16.5 12c0-1.77-1.02-3.29-2.5-4.03v2.21l2.45 2.45c.03-.2.05-.41.05-.63zm2.5 0c0 .94-.2 1.82-.54 2.64l1.51 1.51C20.63 14.91 21 13.5 21 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zM4.27 3L3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06c1.38-.31 2.63-.95 3.69-1.81L19.73 21 21 19.73l-9-9L4.27 3zM12 4L9.91 6.09 12 8.18V4z"/>`;
+                text.textContent = 'Stop';
+            } else if (voiceEnabled) {
+                button.className = 'voice-button enabled';
+                icon.innerHTML = `<path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/>`;
+                text.textContent = 'Voice On';
+            } else {
+                button.className = 'voice-button disabled';
+                icon.innerHTML = `<path d="M16.5 12c0-1.77-1.02-3.29-2.5-4.03v2.21l2.45 2.45c.03-.2.05-.41.05-.63zm2.5 0c0 .94-.2 1.82-.54 2.64l1.51 1.51C20.63 14.91 21 13.5 21 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zM4.27 3L3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06c1.38-.31 2.63-.95 3.69-1.81L19.73 21 21 19.73l-9-9L4.27 3zM12 4L9.91 6.09 12 8.18V4z"/>`;
+                text.textContent = 'Voice Off';
+            }
+        }
+
+        // Update avatar display
+        function updateAvatarDisplay() {
+            const modal = document.getElementById('avatarModal');
+            const mouth = document.getElementById('avatarMouth');
+            
+            if (showAvatar && isSpeaking) {
+                modal.classList.remove('hidden');
+                mouth.classList.add('speaking');
+                updateSpeechBars();
+            } else {
+                modal.classList.add('hidden');
+                mouth.classList.remove('speaking');
+            }
+        }
+
+        // Update speech visualization bars
+        function updateSpeechBars() {
+            const bars = document.querySelectorAll('.speech-bar');
+            bars.forEach(bar => {
+                const height = Math.random() * 20 + 10;
+                bar.style.height = `${height}px`;
+            });
+            
+            if (isSpeaking) {
+                setTimeout(updateSpeechBars, 100);
+            }
+        }
+
+        // Show typing indicator
+        function showTyping() {
+            isTyping = true;
+            renderMessages();
+        }
+
+        // Hide typing indicator
+        function hideTyping() {
+            isTyping = false;
+            renderMessages();
+        }
+
+        // Render messages
+        function renderMessages() {
+            const container = document.getElementById('messagesContainer');
+            let html = '';
+            
+            // Render existing messages
+            messages.forEach(msg => {
+                const isUser = msg.type === 'user';
+                const messageClass = isUser ? 'user' : 'bot';
+                const avatarClass = isUser ? 'user' : 'bot';
+                
+                // Check if this bot message is currently being spoken
+                const isSpeakingThis = msg.type === 'bot' && showAvatar && currentlySpeaking === msg.message;
+                
+                html += `
+                    <div class="message ${messageClass}">
+                        <div class="message-avatar ${avatarClass}">
+                            <svg class="icon" viewBox="0 0 24 24" fill="currentColor">
+                                ${isUser ? 
+                                    '<path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>' :
+                                    '<path d="M20 9V7c0-1.1-.9-2-2-2h-3c0-1.66-1.34-3-3-3S9 3.34 9 5H6c-1.1 0-2 .9-2 2v2c-1.66 0-3 1.34-3 3s1.34 3 3 3v4c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2v-4c1.66 0 3-1.34 3-3s-1.34-3-3-3zM9 12c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zm6 0c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1z"/>'
+                                }
+                            </svg>
+                        </div>
+                        <div class="message-content ${messageClass}">
+                            ${!isSpeakingThis ? 
+                                `<div class="message-text">${msg.message}</div>` :
+                                `<div class="speaking-indicator">
+                                    <svg class="icon" viewBox="0 0 24 24" fill="currentColor">
+                                        <path d="M12 2c5.514 0 10 4.486 10 10s-4.486 10-10 10-10-4.486-10-10 4.486-10 10-10zm0-2c-6.627 0-12 5.373-12 12s5.373 12 12 12 12-5.373 12-12-5.373-12-12-12zm-1.5 17.5l-3.5-3.5 1.4-1.4 2.1 2.1 4.1-4.1 1.4 1.4-5.5 5.5z"/>
+                                    </svg>
+                                    Dr. Sarah is speaking...
+                                </div>`
+                            }
+                            <div class="message-time">${msg.timestamp}</div>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            // Add typing indicator if needed
+            if (isTyping) {
+                html += `
+                    <div class="typing-indicator">
+                        <div class="message-avatar bot">
+                            <svg class="icon" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M20 9V7c0-1.1-.9-2-2-2h-3c0-1.66-1.34-3-3-3S9 3.34 9 5H6c-1.1 0-2 .9-2 2v2c-1.66 0-3 1.34-3 3s1.34 3 3 3v4c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2v-4c1.66 0 3-1.34 3-3s-1.34-3-3-3zM9 12c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zm6 0c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1z"/>
+                            </svg>
+                        </div>
+                        <div class="message-content bot">
+                            <div class="typing-dots">
+                                <div class="typing-dot"></div>
+                                <div class="typing-dot"></div>
+                                <div class="typing-dot"></div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+            
+            container.innerHTML = html;
+            
+            // Scroll to bottom
+            container.scrollTop = container.scrollHeight;
+        }
+
+        // Event listeners
+        document.getElementById('voiceToggle').addEventListener('click', toggleVoice);
+        
+        // Initialize the app when DOM is loaded
+        document.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+</html>

@@ -1,0 +1,228 @@
+.reception-dashboard {
+  padding: 40px;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background-color: rgba(255, 192, 203, 0.1); /* Baby pink with 0.1 opacity */
+  min-height: 100vh;
+  color: #333;
+}
+
+.dashboard-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.dashboard-header h1 {
+  margin: 0;
+  font-size: 2.5rem;
+  color: #2c3e50;
+  font-weight: 700;
+  text-shadow: 1px 1px 2px rgba(0,0,0,0.05);
+}
+
+.user-profile {
+  display: flex;
+  align-items: center;
+  font-size: 1em;
+  color: #555;
+}
+
+.logout-button {
+  padding: 10px 15px;
+  background-color: #e74c3c; /* Red for logout */
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+  font-size: 0.9rem;
+  margin-left: 15px;
+}
+
+.logout-button:hover {
+  background-color: #c0392b;
+  transform: translateY(-2px);
+}
+
+.dashboard-layout {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 40px;
+  align-items: stretch;
+}
+
+.left-column {
+  grid-column: 1 / 2;
+  display: flex;
+}
+
+.right-column {
+  grid-column: 2 / 3;
+  display: flex;
+  flex-direction: column;
+  gap: 40px;
+}
+
+.form-container, .schedule-meeting-container {
+  background-color: #ffffff;
+  padding: 30px;
+  border-radius: 12px;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15); /* More pronounced shadow */
+  border: 1px solid #e0e0e0; /* Subtle border */
+  display: flex;
+  flex-direction: column;
+}
+
+.left-column > .form-container,
+.right-column > .form-container,
+.right-column > .schedule-meeting-container {
+  flex: 1;
+}
+
+.form-container h2, .schedule-meeting-container h2 {
+  color: #34495e; /* Darker heading */
+  font-size: 2rem;
+  margin-bottom: 25px;
+  border-bottom: 2px solid #f0f0f0; /* Lighter border */
+  padding-bottom: 15px;
+  font-weight: 600;
+}
+
+.form-container form {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 30px; /* Slightly reduced gap */
+}
+
+.form-group {
+  margin-bottom: 20px;
+  padding: 0 5px; /* Reduced horizontal padding */
+}
+
+.form-group.full-width {
+  grid-column: 1 / -1;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 8px;
+  color: #555;
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+
+.form-group input,
+.form-group select {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #dcdcdc;
+  border-radius: 6px;
+  font-size: 1rem;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+  box-sizing: border-box;
+  height: 48px; /* Consistent height */
+  background-color: #fdfdfd;
+}
+
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+  border-color: #3498db; /* Blue focus */
+  box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.2); /* Subtle glow */
+  outline: none;
+}
+
+.form-group textarea {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #dcdcdc;
+  border-radius: 6px;
+  font-size: 1rem;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+  box-sizing: border-box;
+  resize: vertical;
+  min-height: 100px;
+  height: auto;
+  background-color: #fdfdfd;
+}
+
+.form-group input[type="checkbox"] {
+  width: auto;
+  margin-right: 10px;
+  transform: scale(1.2); /* Slightly larger checkbox */
+}
+
+.submit-button {
+  padding: 14px 25px;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 1.05rem;
+  font-weight: 600;
+  transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
+  margin-top: auto;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+}
+
+.submit-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 15px rgba(0,0,0,0.15);
+}
+
+.create-button {
+  background-color: #2ecc71; /* Green */
+}
+
+.create-button:hover {
+  background-color: #27ae60;
+}
+
+.update-button {
+  background-color: #3498db; /* Blue */
+}
+
+.update-button:hover {
+  background-color: #2980b9;
+}
+
+.schedule-button {
+  background-color: #9b59b6; /* Purple */
+}
+
+.schedule-button:hover {
+  background-color: #8e44ad;
+}
+
+@media (max-width: 1024px) {
+  .dashboard-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .left-column, .right-column {
+    grid-column: auto;
+  }
+}
+
+@media (max-width: 768px) {
+  .form-row {
+    grid-template-columns: 1fr;
+  }
+  .reception-dashboard {
+    padding: 20px;
+  }
+  .reception-dashboard .logout-button {
+    top: 20px;
+    right: 20px;
+    padding: 10px 15px;
+  }
+}

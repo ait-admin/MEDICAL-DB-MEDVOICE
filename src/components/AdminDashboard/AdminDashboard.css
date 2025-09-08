@@ -1,0 +1,76 @@
+.admin-dashboard-container {
+  padding: 20px;
+  font-family: Arial, sans-serif;
+}
+
+.admin-dashboard-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.admin-dashboard-header h1 {
+  color: #333;
+}
+
+.logout-button {
+  padding: 10px 15px;
+  background-color: #dc3545;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.admin-dashboard-content {
+  display: flex;
+  flex-direction: column; /* Arrange sections vertically */
+  gap: 20px;
+}
+
+.admin-dashboard-grid-sections {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr; /* Three equal columns */
+  gap: 20px;
+}
+
+.admin-dashboard-section {
+  border: 1px solid #ddd;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05); /* Add a subtle shadow for card-like appearance */
+  background-color: #fff; /* Ensure background is white */
+  font-size: 0.95em; /* Adjust base font size */
+}
+
+.admin-dashboard-section h2 {
+  font-size: 1.4em; /* Larger font for section titles */
+  font-weight: bold;
+  margin-bottom: 15px;
+  color: #333;
+}
+
+.admin-dashboard-section h3 {
+  font-size: 1.2em; /* Slightly smaller for sub-headings */
+  font-weight: 600;
+  margin-bottom: 10px;
+  color: #555;
+}
+
+.full-width-report {
+  grid-column: 1 / -1; /* Span across all columns in a grid context, or just take full width in flex */
+}
+
+.report-section {
+  margin-bottom: 30px;
+  padding: 20px;
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.report-section h3 {
+  color: #333;
+  margin-bottom: 15px;
+}

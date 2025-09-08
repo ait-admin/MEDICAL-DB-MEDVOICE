@@ -1,0 +1,621 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Doctor-Patient Multilingual Communication Tool</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <style>
+        body {
+            background: linear-gradient(120deg, #e0eafc 0%, #cfdef3 100%);
+            min-height: 100vh;
+        }
+        .container-fluid {
+            display: flex;
+            flex-direction: row;
+            width: 100vw;
+            min-height: 100vh;
+            padding: 0;
+            max-width: 100vw;
+            box-sizing: border-box;
+        }
+        #sidebar {
+            width: 220px;
+            background: #232946;
+            color: #fff;
+            display: flex;
+            flex-direction: column;
+            align-items: stretch;
+            padding-top: 2rem;
+            min-height: 100vh;
+            box-shadow: 2px 0 16px rgba(44,54,80,0.08);
+            z-index: 10;
+        }
+        #main-content {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            justify-content: flex-start;
+            min-height: 100vh;
+            width: 100%;
+            padding-top: 32px;
+            padding-left: 32px;
+            padding-right: 50vw; /* Add space for process flow sidebar */
+            box-sizing: border-box;
+        }
+        #offline-content > .card {
+            margin-top: 0;
+            margin-bottom: 0;
+            max-width: 540px;
+            width: 100%;
+        }
+        #process-flow-sidebar {
+            width: 28vw !important;
+            min-width: 320px !important;
+            max-width: 32vw !important;
+            height: 100vh;
+            position: fixed;
+            right: 0;
+            top: 0;
+            background: #f8fafd;
+            box-shadow: -4px 0 24px rgba(78,84,200,0.10);
+            z-index: 1050;
+            display: flex;
+            flex-direction: column;
+            align-items: stretch;
+            overflow-y: auto;
+        }
+        @media (max-width: 1200px) {
+            #main-content {
+                padding-right: 0;
+            }
+            #process-flow-sidebar {
+                position: static !important;
+                width: 100vw !important;
+                min-width: 0 !important;
+                max-width: 100vw !important;
+                height: auto !important;
+            }
+        }
+        .card {
+            margin-top: 40px;
+            border-radius: 18px;
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.18);
+            background: rgba(255,255,255,0.95);
+        }
+        .card-header {
+            background: linear-gradient(90deg, #4e54c8 0%, #8f94fb 100%);
+            color: #fff;
+            border-radius: 18px 18px 0 0;
+            box-shadow: 0 2px 8px rgba(78,84,200,0.08);
+        }
+        .btn {
+            font-size: 1.1rem;
+            padding: 0.7em 2em;
+            border-radius: 8px;
+            transition: all 0.18s cubic-bezier(.4,0,.2,1);
+        }
+        .btn:focus, .btn:hover {
+            transform: translateY(-2px) scale(1.04);
+            box-shadow: 0 4px 16px rgba(78,84,200,0.12);
+        }
+        #function-buttons .btn {
+            min-width: 160px;
+        }
+        #function-buttons {
+            gap: 1.2rem;
+        }
+        #status-buttons .btn {
+            min-width: 170px;
+        }
+        .translator-controls {
+            margin-top: 2rem;
+            padding: 1.5rem 1rem 1rem 1rem;
+            background: #f7faff;
+            border-radius: 12px;
+            box-shadow: 0 2px 12px rgba(78,84,200,0.07);
+            display: none;
+        }
+        .translator-controls label {
+            font-weight: 500;
+        }
+        #main-button-group .btn {
+            margin: 0.5rem 1rem;
+            min-width: 180px;
+        }
+        #latest-message-container {
+            margin-top: 1.5rem;
+            background: #e9f0fb;
+            border-radius: 8px;
+            padding: 1rem 1.5rem;
+            font-size: 1.1rem;
+            color: #2d3a4a;
+            min-height: 48px;
+        }
+        #dynamic-content-container iframe {
+            border-radius: 16px;
+            box-shadow: 0 4px 24px rgba(78,84,200,0.10);
+        }
+        #conversation-history {
+            margin-top: 2rem;
+            background: #f3f6fd;
+            border-radius: 10px;
+            padding: 1.2rem 1.5rem;
+            box-shadow: 0 2px 8px rgba(78,84,200,0.06);
+        }
+        /* Sidebar styles */
+        #sidebar {
+            width: 220px;
+            background: #232946;
+            color: #fff;
+            display: flex;
+            flex-direction: column;
+            align-items: stretch;
+            padding-top: 2rem;
+            min-height: 100vh;
+            box-shadow: 2px 0 16px rgba(44,54,80,0.08);
+        }
+        #sidebar .btn {
+            background: #4e54c8;
+            color: #fff;
+            margin: 0.5rem 0;
+        }
+        #sidebar .btn:hover {
+            background: #3b47a1;
+        }
+        /* End of sidebar styles */
+        /* Center the main content area and make it more compact */
+        #main-content {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            justify-content: flex-start;
+            min-height: 100vh;
+            width: 100%;
+            padding-top: 32px;
+            padding-left: 32px;
+            padding-right: 32vw; /* Add space for process flow sidebar */
+            box-sizing: border-box;
+        }
+        #offline-content > .card {
+            margin-top: 0;
+            margin-bottom: 0;
+            max-width: 540px;
+            width: 100%;
+        }
+        #process-flow-sidebar {
+            width: 28vw !important;
+            min-width: 320px !important;
+            max-width: 32vw !important;
+            height: 100vh;
+            position: fixed;
+            right: 0;
+            top: 0;
+            background: #f8fafd;
+            box-shadow: -4px 0 24px rgba(78,84,200,0.10);
+            z-index: 1050;
+            display: flex;
+            flex-direction: column;
+            align-items: stretch;
+            overflow-y: auto;
+        }
+        @media (max-width: 1200px) {
+            #main-content {
+                padding-right: 0;
+            }
+            #process-flow-sidebar {
+                position: static !important;
+                width: 100vw !important;
+                min-width: 0 !important;
+                max-width: 100vw !important;
+                height: auto !important;
+            }
+        }
+        /* Make all process steps always visible */
+        #process-flow-sidebar .process-step {
+            display: flex !important;
+        }
+        .process-flow-container { background: none; }
+        .process-header h2 { margin-bottom: 0.2em; }
+        .road-infographic { min-height: 340px; }
+        .process-step {
+            position: relative !important;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            background: rgba(255,255,255,0.95);
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(78,84,200,0.07);
+            padding: 0.5em 1em 0.5em 0.5em;
+            transition: transform 0.2s, box-shadow 0.2s;
+            cursor: pointer;
+            z-index: 2;
+            width: 95%;
+            min-width: 0;
+            max-width: 100%;
+        }
+        .process-step:hover {
+            transform: scale(1.07) translateY(-4px);
+            box-shadow: 0 8px 24px rgba(78,84,200,0.13);
+            background: #f0f4ff;
+        }
+        .step-number {
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #4e54c8 0%, #8f94fb 100%);
+            color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            font-weight: bold;
+            box-shadow: 0 2px 8px rgba(78,84,200,0.10);
+            border: 2px solid #fff;
+            margin-right: 10px;
+        }
+        .step-content {
+            display: flex;
+            flex-direction: column;
+        }
+        .step-title {
+            font-size: 1.05rem;
+            font-weight: 600;
+            color: #4e54c8;
+        }
+        .step-description {
+            font-size: 0.97rem;
+            color: #2d3a4a;
+        }
+        .road-infographic {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5em;
+            position: relative;
+            width: 100%;
+            min-height: 420px;
+            margin-bottom: 1.5em;
+            align-items: flex-start;
+        }
+    </style>
+</head>
+<body>
+    <div id="zerokost-branding" style="position: absolute; left: 240px; top: 24px; z-index: 100; display: flex; align-items: center; gap: 16px;">
+    <!-- <img src="icons/yoom-logo.svg" alt="Zerokost Logo" style="height: 48px; width: 48px; border-radius: 12px; box-shadow: 0 2px 8px rgba(78,84,200,0.10); background: #fff;" /> -->
+    <span style="font-size: 1.5rem; font-weight: 700; color: #4e54c8; letter-spacing: 1px;">Zerokost Healthcare Pvt. Ltd.</span>
+</div>
+<!-- Spacer to push buttons down -->
+<div style="height: 32px;"></div>
+    <div class="container-fluid" style="display: flex; flex-direction: row; width: 100vw; min-height: 100vh; padding: 0; max-width: 100vw;">
+        <!-- Zerokost Healthcare Pvt. Ltd. Branding -->
+        <!-- <div id="zerokost-branding" style="position: absolute; left: 240px; top: 24px; z-index: 100; display: flex; align-items: center; gap: 16px;">
+            <img src="icons/yoom-logo.svg" alt="Zerokost Logo" style="height: 48px; width: 48px; border-radius: 12px; box-shadow: 0 2px 8px rgba(78,84,200,0.10); background: #fff;" />
+            <span style="font-size: 1.5rem; font-weight: 700; color: #4e54c8; letter-spacing: 1px;">Zerokost Healthcare Pvt. Ltd.</span>
+        </div> -->
+        <!-- Sidebar -->
+        <div id="sidebar" style="width: 220px; background: #232946; color: #fff; display: flex; flex-direction: column; align-items: stretch; padding-top: 2rem; min-height: 100vh; box-shadow: 2px 0 16px rgba(44,54,80,0.08);">
+            <button id="sidebar-offline" class="btn btn-outline-light mb-3 mx-3" style="background:#4e54c8; color:#fff;">Offline</button>
+            <button id="sidebar-online" class="btn btn-outline-light mb-3 mx-3" style="background:#43b581; color:#fff;">Online</button>
+            <button id="sidebar-ai" class="btn btn-outline-light mb-3 mx-3" style="background:#3b82f6; color:#fff;">AI Assistant</button>
+        </div>
+        <!-- Main Content Area -->
+        <div id="main-content" style="flex: 1 1 0; max-width: 100vw;">
+            <div id="offline-content">
+                <div class="card" style="flex: 1 1 0; max-width: 70vw; margin-right: 0;">
+                    <div class="control-panel">
+                        <!-- Zerokost Branding Above Buttons -->
+                        <!-- <div id="zerokost-branding" style="width:100%; display: flex; align-items: center; gap: 16px; justify-content: flex-start; margin-bottom: 18px; margin-top: 8px;">
+                            <img src="icons/yoom-logo.svg" alt="Zerokost Logo" style="height: 48px; width: 48px; border-radius: 12px; box-shadow: 0 2px 8px rgba(78,84,200,0.10); background: #fff;" />
+                            <span style="font-size: 1.5rem; font-weight: 700; color: #4e54c8; letter-spacing: 1px;">Zerokost Healthcare Pvt. Ltd.</span>
+                        </div> -->
+                        <!-- Function Buttons Below Branding -->
+                        <div id="function-buttons" class="d-flex flex-wrap justify-content-star mb-3" style="display:flex;">
+                            <button id="translator-btn" class="btn btn-success m-2" style="display:inline-block;">Translator</button>
+                            <button id="llm-btn" class="btn btn-outline-primary m-2" style="display:inline-block;">Summary</button>
+                            <button id="analysis-btn" class="btn btn-outline-primary m-2" style="display:inline-block;">Form Filling</button>
+                            <button id="back-btn" class="btn btn-secondary m-2" style="display:none;">Back</button>
+                        </div>
+                        
+                        <!-- Translator Controls (hidden by default) -->
+                        <div id="translator-controls" class="translator-controls">
+                            <div class="row mb-3">
+                                <div class="col-md-6 mb-3 mb-md-0">
+                                    <label for="doctor-lang-input" class="form-label">Doctor's Language:</label>
+                                    <select id="doctor-lang-input" class="form-select"></select>
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="patient-lang-input" class="form-label">Patient's Language:</label>
+                                    <select id="patient-lang-input" class="form-select"></select>
+                                </div>
+                            </div>
+                            
+                            <!-- Main Translator Controls -->
+                            <div id="main-button-group" class="d-flex flex-wrap justify-content-center">
+                                <button id="doctor-btn" class="btn btn-primary">
+                                    <i class="bi bi-mic-fill"></i> <span class="btn-label">Doctor Speaking</span>
+                                </button>
+                                <button id="patient-btn" class="btn btn-primary">
+                                    <i class="bi bi-mic-fill"></i> <span class="btn-label">Patient Speaking</span>
+                                </button>
+                                <button id="clear-btn" class="btn btn-outline-primary">
+                                    <i class="bi bi-trash-fill"></i> <span class="btn-label">New Meet</span>
+                                </button>
+                                
+                                
+                            </div>
+                            
+                            <!-- Latest message display -->
+                            <div id="latest-message-container" class="latest-message-container">
+                                <p><em>Not yet started.</em></p>
+                            </div>
+                        </div>
+                        
+                        <!-- Container for dynamic content below the buttons -->
+                        <div id="dynamic-content-container"></div>
+                    </div>
+                    
+
+                    <!-- Conversation History (hidden by default) -->
+                    <div id="conversation-history" class="conversation-history" style="display: none;">
+                        <p id="no-history-msg"><em>No history yet.</em></p>
+                    </div>
+                </div>
+                <!-- Persistent Process Flow Container -->
+                <div id="process-flow-sidebar" style="width: 30vw; min-width: 320px; max-width: 30vw; height: 100vh; position: fixed; right: 0; top: 0; background: #f8fafd; box-shadow: -4px 0 24px rgba(78,84,200,0.10); z-index: 1050; display: flex; flex-direction: column; align-items: stretch; overflow-y: auto;">
+                    <div class="process-flow-container" style="padding: 1.2rem 1rem;">
+                        <div class="process-header" style="text-align:center;">
+                            <h2 style="font-size:1.4rem; font-weight:700; color:#4e54c8; margin-bottom:0.2em;">Communication Process Flow</h2>
+                            <p style="font-size:1rem; color:#6c757d; margin-bottom:1.2em;">Step-by-step translation workflow</p>
+                        </div>
+                        <div class="road-infographic" id="road-infographic" style="display: flex; flex-direction: column; gap: 1.5em; position: relative; width: 100%; min-height: 420px; margin-bottom: 1.5em; align-items: flex-start;">
+                            <!-- Optional: vertical line for visual flow -->
+                            <div style="position: absolute; left: 28px; top: 24px; bottom: 24px; width: 4px; background: linear-gradient(180deg, #bdbdbd 0%, #e0eafc 100%); border-radius: 2px; z-index: 0;"></div>
+                            <div class="process-step" data-step="1" style="position: relative; background: rgba(255,255,255,0.95); z-index: 1;">
+                                <div class="step-number">1</div>
+                                <div class="step-content">
+                                    <div class="step-title">Click on "Offline"</div>
+                                    <div class="step-description">Start by selecting the doctor availability status as In-house.</div>
+                                </div>
+                            </div>
+                            <div class="process-step" data-step="2" style="position: relative; background: rgba(255,255,255,0.95); z-index: 1;">
+                                <div class="step-number">2</div>
+                                <div class="step-content">
+                                    <div class="step-title">Click on "Translator"</div>
+                                    <div class="step-description">Choose the Translator function to begin the translation workflow.</div>
+                                </div>
+                            </div>
+                            <div class="process-step" data-step="3" style="position: relative; background: rgba(255,255,255,0.95); z-index: 1;">
+                                <div class="step-number">3</div>
+                                <div class="step-content">
+                                    <div class="step-title">Select Doctor/Patient Language</div>
+                                    <div class="step-description">Pick the languages for both doctor and patient from the dropdowns.</div>
+                                </div>
+                            </div>
+                            <div class="process-step" data-step="4" style="position: relative; background: rgba(255,255,255,0.95); z-index: 1;">
+                                <div class="step-number">4</div>
+                                <div class="step-content">
+                                    <div class="step-title">Press "Doctor Speaks" or "Patient"</div>
+                                    <div class="step-description">Click the respective button to record the message.</div>
+                                </div>
+                            </div>
+                            <div class="process-step" data-step="5" style="position: relative; background: rgba(255,255,255,0.95); z-index: 1;">
+                                <div class="step-number">5</div>
+                                <div class="step-content">
+                                    <div class="step-title">Click on Speaker to Speak Out</div>
+                                    <div class="step-description">Play the translated message aloud if needed.</div>
+                                </div>
+                            </div>
+                            <div class="process-step" data-step="6" style="position: relative; background: rgba(255,255,255,0.95); z-index: 1;">
+                                <div class="step-number">6</div>
+                                <div class="step-content">
+                                    <div class="step-title">Click "New Meet" to Clear & Download</div>
+                                    <div class="step-description">Reset the session and download the conversation if required.</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <style>
+                        .process-flow-container { background: none; }
+                        .process-header h2 { margin-bottom: 0.2em; }
+                        .road-infographic { min-height: 340px; }
+                        .process-step {
+                            position: relative !important;
+                            display: flex;
+                            align-items: center;
+                            gap: 16px;
+                            background: rgba(255,255,255,0.95);
+                            border-radius: 12px;
+                            box-shadow: 0 2px 8px rgba(78,84,200,0.07);
+                            padding: 0.5em 1em 0.5em 0.5em;
+                            transition: transform 0.2s, box-shadow 0.2s;
+                            cursor: pointer;
+                            z-index: 2;
+                            width: 95%;
+                            min-width: 0;
+                            max-width: 100%;
+                        }
+                        .process-step:hover {
+                            transform: scale(1.07) translateY(-4px);
+                            box-shadow: 0 8px 24px rgba(78,84,200,0.13);
+                            background: #f0f4ff;
+                        }
+                        .step-number {
+                            width: 38px;
+                            height: 38px;
+                            border-radius: 50%;
+                            background: linear-gradient(135deg, #4e54c8 0%, #8f94fb 100%);
+                            color: #fff;
+                            display: flex;
+                            align-items: center;
+                            justify-content: center;
+                            font-size: 1.2rem;
+                            font-weight: bold;
+                            box-shadow: 0 2px 8px rgba(78,84,200,0.10);
+                            border: 2px solid #fff;
+                            margin-right: 10px;
+                        }
+                        .step-content {
+                            display: flex;
+                            flex-direction: column;
+                        }
+                        .step-title {
+                            font-size: 1.05rem;
+                            font-weight: 600;
+                            color: #4e54c8;
+                        }
+                        .step-description {
+                            font-size: 0.97rem;
+                            color: #2d3a4a;
+                        }
+                        .road-infographic {
+                            display: flex;
+                            flex-direction: column;
+                            gap: 1.5em;
+                            position: relative;
+                            width: 100%;
+                            min-height: 420px;
+                            margin-bottom: 1.5em;
+                            align-items: flex-start;
+                        }
+                    </style>
+                </div>
+            </div>
+            <div id="ai-content" style="display:none; padding:2rem;">
+                <h2>AI Bot Coming Soon</h2>
+                <p>This feature will be available in a future update.</p>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="script.js"></script>
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const dynamicContainer = document.getElementById('dynamic-content-container');
+        const translatorControls = document.getElementById('translator-controls');
+        const conversationHistory = document.getElementById('conversation-history');
+        const functionButtons = document.getElementById('function-buttons');
+        const backBtn = document.getElementById('back-btn');
+
+        // Show function buttons directly
+        functionButtons.style.display = 'flex';
+        document.getElementById('translator-btn').style.display = 'inline-block';
+        document.getElementById('llm-btn').style.display = 'inline-block';
+        document.getElementById('analysis-btn').style.display = 'inline-block';
+        document.getElementById('back-btn').style.display = 'none';
+        // Hide translator controls and conversation history initially
+        translatorControls.style.display = 'none';
+        conversationHistory.style.display = 'none';
+
+        // Remove status buttons logic
+
+        // Back button: return to status buttons, hide function buttons and all dynamic content
+        backBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            functionButtons.style.transition = 'opacity 0.3s cubic-bezier(.4,0,.2,1)';
+            functionButtons.style.opacity = '0';
+            setTimeout(function() {
+                functionButtons.style.display = 'none';
+                // Hide all function buttons again
+                document.getElementById('translator-btn').style.display = 'none';
+                document.getElementById('llm-btn').style.display = 'none';
+                document.getElementById('analysis-btn').style.display = 'none';
+                document.getElementById('back-btn').style.display = 'none';
+                translatorControls.style.display = 'none';
+                conversationHistory.style.display = 'none';
+                dynamicContainer.innerHTML = '';
+            }, 300);
+        });
+
+        // Function buttons event listeners
+        document.getElementById('translator-btn').addEventListener('click', function(e) {
+            e.preventDefault();
+            // Show translator controls and conversation history
+            translatorControls.style.display = 'block';
+            conversationHistory.style.display = 'block';
+            // Hide any other dynamic content
+            dynamicContainer.innerHTML = '';
+            // Scroll to the translator controls for visibility
+            translatorControls.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            // Update process flow sidebar for Translator
+            document.getElementById('road-infographic').innerHTML = `
+                <div style="position: absolute; left: 28px; top: 24px; bottom: 24px; width: 4px; background: linear-gradient(180deg, #bdbdbd 0%, #e0eafc 100%); border-radius: 2px; z-index: 0;"></div>
+                <div class="process-step" data-step="1"><div class="step-number">1</div><div class="step-content"><div class="step-title">Click on "Offline"</div><div class="step-description">Start by selecting the doctor availability status as In-house.</div></div></div>
+                <div class="process-step" data-step="2"><div class="step-number">2</div><div class="step-content"><div class="step-title">Click on "Translator"</div><div class="step-description">Choose the Translator function to begin the translation workflow.</div></div></div>
+                <div class="process-step" data-step="3"><div class="step-number">3</div><div class="step-content"><div class="step-title">Select Doctor/Patient Language</div><div class="step-description">Pick the languages for both doctor and patient from the dropdowns.</div></div></div>
+                <div class="process-step" data-step="4"><div class="step-number">4</div><div class="step-content"><div class="step-title">Press "Doctor Speaks" or "Patient"</div><div class="step-description">Click the respective button to record the message.</div></div></div>
+                <div class="process-step" data-step="5"><div class="step-number">5</div><div class="step-content"><div class="step-title">Click on Speaker to Speak Out</div><div class="step-description">Play the translated message aloud if needed.</div></div></div>
+                <div class="process-step" data-step="6"><div class="step-number">6</div><div class="step-content"><div class="step-title">Click "New Meet" to Clear & Download</div><div class="step-description">Reset the session and download the conversation if required.</div></div></div>
+            `;
+        });
+
+        document.getElementById('llm-btn').addEventListener('click', function(e) {
+            e.preventDefault();
+            // Hide translator controls and conversation history
+            translatorControls.style.display = 'none';
+            conversationHistory.style.display = 'none';
+            // Load LLM content
+            dynamicContainer.innerHTML = '<iframe src="llm.html" style="width:100%;min-height:80vh;border:none;border-radius:12px;box-shadow:0 4px 24px rgba(0,0,0,0.08);"></iframe>';
+            // Update process flow sidebar for LLM Transcription
+            document.getElementById('road-infographic').innerHTML = `
+                <div style="position: absolute; left: 28px; top: 24px; bottom: 24px; width: 4px; background: linear-gradient(180deg, #bdbdbd 0%, #e0eafc 100%); border-radius: 2px; z-index: 0;"></div>
+                <div class="process-step" data-step="1"><div class="step-number">1</div><div class="step-content"><div class="step-title">Select Transcription</div><div class="step-description">Click the Transcription button to begin.</div></div></div>
+                <div class="process-step" data-step="2"><div class="step-number">2</div><div class="step-content"><div class="step-title">Upload your txt</div><div class="step-description">Choose the file.</div></div></div>
+                <div class="process-step" data-step="3"><div class="step-number">3</div><div class="step-content"><div class="step-title">Click "Analyze Conversation"</div><div class="step-description">Text will be recorded and it will analyze</div></div></div>
+                <div class="process-step" data-step="4"><div class="step-number">4</div><div class="step-content"><div class="step-title">View Transcribed Text</div><div class="step-description">Review the generated transcription.</div></div></div>
+                <div class="process-step" data-step="5"><div class="step-number">5</div><div class="step-content"><div class="step-title">Copy, Edit, or Download</div><div class="step-description">Copy, edit, or download the transcription as needed.</div></div></div>
+            `;
+        });
+
+        document.getElementById('analysis-btn').addEventListener('click', function(e) {
+            e.preventDefault();
+            // Hide translator controls and conversation history
+            translatorControls.style.display = 'none';
+            conversationHistory.style.display = 'none';
+            // Load analysis content
+            dynamicContainer.innerHTML = '<iframe src="analysis.html" style="width:100%;min-height:80vh;border:none;border-radius:12px;box-shadow:0 4px 24px rgba(0,0,0,0.08);"></iframe>';
+            // Update process flow sidebar for Auto Form Filling
+            document.getElementById('road-infographic').innerHTML = `
+                <div style="position: absolute; left: 28px; top: 24px; bottom: 24px; width: 4px; background: linear-gradient(180deg, #bdbdbd 0%, #e0eafc 100%); border-radius: 2px; z-index: 0;"></div>
+                <div class="process-step" data-step="1"><div class="step-number">1</div><div class="step-content"><div class="step-title">Click on "Offline"</div><div class="step-description">Start by selecting the doctor availability status as In-house.</div></div></div>
+                <div class="process-step" data-step="2"><div class="step-number">2</div><div class="step-content"><div class="step-title">Click on "Form Filling"</div><div class="step-description">Begin the auto form filling workflow.</div></div></div>
+                <div class="process-step" data-step="3"><div class="step-number">3</div><div class="step-content"><div class="step-title">Input Data</div><div class="step-description">Provide the required information for analysis.</div></div></div>
+                <div class="process-step" data-step="4"><div class="step-number">4</div><div class="step-content"><div class="step-title">Analyze & Fill Form</div><div class="step-description">Let the system analyze and fill the form automatically.</div></div></div>
+                <div class="process-step" data-step="5"><div class="step-number">5</div><div class="step-content"><div class="step-title">Review & Download</div><div class="step-description">Review and download the filled form if needed.</div></div></div>
+            `;
+        });
+
+        document.getElementById('processflow-btn').addEventListener('click', function(e) {
+            e.preventDefault();
+            // Hide translator controls and conversation history
+            translatorControls.style.display = 'none';
+            conversationHistory.style.display = 'none';
+            // Load process flow content
+            dynamicContainer.innerHTML = '<iframe src="translator_process_flow.html" style="width:100%;min-height:80vh;border:none;border-radius:12px;box-shadow:0 4px 24px rgba(0,0,0,0.08);"></iframe>';
+        });
+    });
+    </script>
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Sidebar button logic
+        const offlineBtn = document.getElementById('sidebar-offline');
+        const onlineBtn = document.getElementById('sidebar-online');
+        const aiBtn = document.getElementById('sidebar-ai');
+        const offlineContent = document.getElementById('offline-content');
+        const aiContent = document.getElementById('ai-content');
+        offlineBtn.addEventListener('click', function() {
+            offlineContent.style.display = 'block';
+            aiContent.style.display = 'none';
+        });
+        onlineBtn.addEventListener('click', function() {
+            window.location.href = 'http://zeromeeting-git-main-rakshas-projects-a67f3660.vercel.app';
+        });
+        aiBtn.addEventListener('click', function() {
+            // Instead of showing a div, redirect to the AI Bot page
+            window.location.href = 'with_avatar.html';
+        });
+    });
+    </script>
+</body>
+</html>

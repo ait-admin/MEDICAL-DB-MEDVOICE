@@ -1,0 +1,49 @@
+.patient-tracking-container {
+  background-color: #ffffff;
+  padding: 20px;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.patient-tracking-container h2 {
+  color: #555;
+  font-size: 1.5rem;
+  margin-bottom: 15px;
+  border-bottom: 2px solid #eee;
+  padding-bottom: 10px;
+}
+
+.patient-tracking-list {
+  list-style: none;
+  padding: 0;
+}
+
+.patient-tracking-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 0;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.patient-tracking-item:last-child {
+  border-bottom: none;
+}
+
+.patient-info {
+  font-size: 1rem;
+  color: #333;
+}
+
+.patient-name {
+  font-weight: 600;
+}
+
+.patient-procedure {
+  color: #007bff;
+}
+
+.patient-return-time {
+  font-size: 0.9rem;
+  color: #555;
+}
